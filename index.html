@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10111b">
+  <title>AIReel | حوّل صورك إلى فيديو</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #10111b;
+      color: #f8fafc;
+      font-family: system-ui, Arial, sans-serif;
+    }
+    .app {
+      width: 100%;
+      max-width: 520px;
+      margin: auto;
+      padding: 20px 16px 36px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg,#8b5cf6,#5b21b6);
+      font-size: 25px;
+    }
+    h1 { margin: 0; font-size: 25px; }
+    .subtitle { color: #a5b4fc; font-size: 13px; margin-top: 4px; }
+    .tag {
+      margin-right: auto;
+      border: 1px solid #34354b;
+      color: #c4b5fd;
+      padding: 6px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+    }
+    .intro { margin-bottom: 22px; }
+    .intro h2 { font-size: 22px; margin: 0 0 8px; }
+    .intro p { color: #a1a1b5; line-height: 1.8; margin: 0; }
+    .panel {
+      background: #191a29;
+      border: 1px solid #303146;
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .upload {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 190px;
+      padding: 20px;
+      text-align: center;
+      border: 2px dashed #555071;
+      border-radius: 15px;
+      background: #141522;
+      cursor: pointer;
+    }
+    .upload .symbol { font-size: 40px; margin-bottom: 10px; }
+    .upload strong { font-size: 15px; }
+    .upload small { color: #999bb3; margin-top: 8px; }
+    #imageInput { display: none; }
+    #preview {
+      display: none;
+      width: 100%;
+      max-height: 330px;
+      object-fit: contain;
+      margin-top: 14px;
+      border-radius: 12px;
+      background: #0b0c13;
+    }
+    textarea, select {
+      display: block;
+      width: 100%;
+      color: white;
+      background: #11121e;
+      border: 1px solid #393a51;
+      border-radius: 12px;
+      padding: 13px;
+      font: inherit;
+      outline: none;
+    }
+    textarea { min-height: 110px; resize: vertical; line-height: 1.7; }
+    textarea:focus, select:focus { border-color: #a78bfa; }
+    .hint { color: #9294aa; font-size: 12px; line-height: 1.7; margin-top: 9px; }
+    .primary, .secondary {
+      display: block;
+      width: 100%;
+      border: 0;
+      border-radius: 13px;
+      padding: 15px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+    }
+    .primary {
+      color: white;
+      background: linear-gradient(100deg,#7c3aed,#6d28d9);
+    }
+    .secondary {
+      color: #e9d5ff;
+      background: #29213f;
+      margin-top: 10px;
+    }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .notice {
+      border-radius: 12px;
+      background: #242033;
+      color: #ddd6fe;
+      padding: 13px;
+      line-height: 1.8;
+      font-size: 13px;
+      margin-top: 14px;
+    }
+    #status { margin-top: 14px; line-height: 1.8; font-size: 13px; color: #c4b5fd; }
+    #videoResult { display: none; width: 100%; margin-top: 14px; border-radius: 12px; }
+    footer { text-align: center; color: #73758b; font-size: 12px; padding: 12px; }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div class="logo">🎬</div>
+      <div>
+        <h1>AIReel</h1>
+        <div class="subtitle">حوّل صورك إلى فيديوهات</div>
+      </div>
+      <span class="tag">نسخة تجريبية</span>
+    </header>
+
+    <section class="intro">
+      <h2>اصنع فيديوك بالذكاء الاصطناعي</h2>
+      <p>اختر صورة، واكتب الحركة التي تتخيلها. سنجهز صورتك لإرسالها إلى خدمة توليد الفيديو عند ربطها.</p>
+    </section>
+
+    <section class="panel">
+      <label class="label" for="imageInput">١. اختر صورتك</label>
+      <label class="upload" for="imageInput">
+        <span class="symbol">🖼️</span>
+        <strong>اضغط لاختيار صورة من هاتفك</strong>
+        <small>JPG أو PNG أو WebP</small>
+      </label>
+      <input id="imageInput" type="file" accept="image/jpeg,image/png,image/webp">
+      <img id="preview" alt="معاينة الصورة المختارة">
+      <button class="secondary" id="removeImage" type="button" hidden>إزالة الصورة</button>
+    </section>
+
+    <section class="panel">
+      <label class="label" for="prompt">٢. صف الحركة المطلوبة</label>
+      <textarea id="prompt" maxlength="1000"
+        placeholder="مثال: الشخص يبتسم ويحرك رأسه بلطف، مع حركة كاميرا سينمائية طبيعية."></textarea>
+      <div class="hint">اكتب وصفًا واضحًا للحركة التي تريدها في الفيديو.</div>
+    </section>
+
+    <section class="panel">
+      <label class="label" for="duration">٣. مدة الفيديو المطلوبة</label>
+      <select id="duration">
+        <option value="5">٥ ثوانٍ</option>
+        <option value="10">١٠ ثوانٍ</option>
+      </select>
+      <div class="hint">المدة النهائية تعتمد على إمكانات خدمة التوليد التي سنربطها.</div>
+    </section>
+
+    <button class="primary" id="generate" type="button">✨ تجهيز طلب إنشاء الفيديو</button>
+    <div id="status" role="status" aria-live="polite"></div>
+
+    <section class="panel" id="resultPanel" hidden>
+      <label class="label">٤. الفيديو الناتج</label>
+      <video id="videoResult" controls playsinline></video>
+      <a id="download" class="primary" href="#" download="AIReel.mp4">⬇️ تنزيل الفيديو</a>
+    </section>
+
+    <div class="notice">
+      ℹ️ هذه الواجهة لا تولّد فيديو حقيقيًا بعد. يجب ربطها بخادم ذكاء اصطناعي قبل أن يعمل زر التوليد. اختيار الصورة ومعاينتها يعملان محليًا على جهازك.
+    </div>
+
+    <footer>AIReel · مشروع تجريبي</footer>
+  </main>
+
+  <script>
+    const imageInput = document.getElementById('imageInput');
+    const preview = document.getElementById('preview');
+    const removeImage = document.getElementById('removeImage');
+    const prompt = document.getElementById('prompt');
+    const generate = document.getElementById('generate');
+    const status = document.getElementById('status');
+    let imageUrl = null;
+
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files && imageInput.files[0];
+      if (!file) return;
+
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        status.textContent = 'يرجى اختيار صورة بصيغة JPG أو PNG أو WebP.';
+        imageInput.value = '';
+        return;
+      }
+
+      if (imageUrl) URL.revokeObjectURL(imageUrl);
+      imageUrl = URL.createObjectURL(file);
+      preview.src = imageUrl;
+      preview.style.display = 'block';
+      removeImage.hidden = false;
+      status.textContent = 'تم اختيار الصورة بنجاح.';
+    });
+
+    removeImage.addEventListener('click', () => {
+      if (imageUrl) URL.revokeObjectURL(imageUrl);
+      imageUrl = null;
+      imageInput.value = '';
+      preview.removeAttribute('src');
+      preview.style.display = 'none';
+      removeImage.hidden = true;
+      status.textContent = 'تمت إزالة الصورة.';
+    });
+
+    generate.addEventListener('click', () => {
+      if (!imageInput.files || !imageInput.files[0]) {
+        status.textContent = 'يرجى اختيار صورة أولًا.';
+        return;
+      }
+
+      if (!prompt.value.trim()) {
+        status.textContent = 'يرجى كتابة وصف الحركة المطلوبة.';
+        prompt.focus();
+        return;
+      }
+
+      status.textContent =
+        'واجهة AIReel جاهزة، لكن خدمة توليد الفيديو لم تُربط بعد. الخطوة التالية هي إعداد خادم التوليد وربط هذا الزر به.';
+    });
+  </script>
+</body>
+</html>
